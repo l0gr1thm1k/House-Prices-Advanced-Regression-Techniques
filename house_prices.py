@@ -19,7 +19,7 @@ def preprocess(data):
         if dataset[col].dtype == object:
             encode_category(dataset, col)
             one_hot_encoding_columns.insert(0, index)
-        # impute_column(dataset, col)
+        impute_column(dataset, col)
     # one hot encode
     X = dataset.iloc[:, 1:-1].values
     y = dataset.iloc[:, -1].values.reshape(-1, 1)
@@ -27,9 +27,9 @@ def preprocess(data):
 
 
 def impute_column(dataset, col):
-    imputer = Imputer(axis=1)
-    imputer.fit(dataset[col])
-    dataset[col] = imputer.transform(dataset[col])
+    imputer = Imputer(axis=0)
+    imputer.fit(dataset[[col]])
+    dataset[col] = imputer.transform(dataset[[col]]).ravel()
 
 
 def encode_category(dataset, col):
@@ -45,5 +45,5 @@ def one_hot_encode(X, index):
 #if __name__ == '__main__':
 X, y = preprocess('train.csv')
 
-dataset = pd.read_csv('train.csv')
-impute_column(dataset, 'LotFrontage')
+#dataset = pd.read_csv('train.csv')
+#impute_column(dataset, 'LotFrontage')
