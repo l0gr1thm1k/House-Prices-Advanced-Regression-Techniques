@@ -9,7 +9,7 @@ Created on Fri May 12 08:47:14 2017
 import numpy as np
 import pandas as pd
 
-from sklearn.preprocessing import LabelEncoder, OneHotEncoder, Imputer
+from sklearn.preprocessing import LabelEncoder, OneHotEncoder, Imputer, StandardScaler
 
 
 def preprocess(data):
@@ -23,6 +23,11 @@ def preprocess(data):
     # one hot encode
     X = dataset.iloc[:, 1:-1].values
     y = dataset.iloc[:, -1].values.reshape(-1, 1)
+    
+    # Scale the data
+    sc = StandardScaler()
+    X = sc.fit_transform(X)
+    
     return X, y
 
 
