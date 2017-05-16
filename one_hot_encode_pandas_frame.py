@@ -7,6 +7,7 @@ Created on Mon May 15 08:45:13 2017
 
 import pandas as pd
 from sklearn.feature_extraction import DictVectorizer
+    
 
 def one_hot_encode_pandas_frame(data, cols, replace=False):
     """
@@ -25,8 +26,9 @@ def one_hot_encode_pandas_frame(data, cols, replace=False):
               original data
     """
     vec = DictVectorizer()
-    mkdict = lambda row: dict((col, row[col]) for col in cols)
+    mkdict = lambda row: dict((col, str(row[col])) for col in cols)
     vecData = pd.DataFrame(vec.fit_transform(data[cols].apply(mkdict, axis=1)).toarray())
+    # print(vecData)
     vecData.columns = vec.get_feature_names()
     vecData.index = data.index
     if replace is True:
@@ -34,8 +36,6 @@ def one_hot_encode_pandas_frame(data, cols, replace=False):
         data = data.join(vecData)
     return (data, vecData, vec)
 
-
-#result = one_hot_encode_pandas_frame(dataset, ['MSZoning', 'Street'], replace=True)[0]
 
 def test():
     dataset = pd.read_csv('train.csv')
@@ -45,5 +45,3 @@ def test():
             one_hot_encoding_columns.append(j)
     new_result = one_hot_encode_pandas_frame(dataset, one_hot_encoding_columns, replace=True)[0]
     return new_result
-
-new_result = test()
