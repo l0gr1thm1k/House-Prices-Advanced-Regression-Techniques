@@ -15,6 +15,8 @@ from one_hot_encode_pandas_frame import one_hot_encode_pandas_frame as ohepf
 def preprocess(data):
     one_hot_encoding_columns = []
     dataset = pd.read_csv(data)
+    y = dataset.iloc[:, -1].values.reshape(-1, 1)
+    del dataset['Id']
     for index, col in enumerate(dataset.columns):
         if dataset[col].dtype == object:
             one_hot_encoding_columns.append(col)
@@ -22,15 +24,20 @@ def preprocess(data):
         impute_column(dataset, col)
 
     dataset = ohepf(dataset, one_hot_encoding_columns, replace=True)[0]
-    X = dataset.iloc[:, 1:-1].values
-    y = dataset.iloc[:, -1].values.reshape(-1, 1)
+    remove_dummy_variable_columns(dataset)
     
     # Scale the data
-    # sc = StandardScaler()
-    # X = sc.fit_transform(X)
+    sc = StandardScaler()
+    X = sc.fit_transform(dataset)
+    
     return X, y
 
 
+def remove_dummy_variable_columns(dataset):
+    import re
+    columns_to_remove = [x for x in dataset.columns if re.findall('=0.0', x)]
+    for column in columns_to_remove:
+        del dataset[column]
 def impute_column(dataset, col):
     imputer = Imputer(axis=0)
     imputer.fit(dataset[[col]])
@@ -57,5 +64,5 @@ def one_hot_encode(X, index):
     return results
 
 
-#if __name__ == '__main__':
-X, y = preprocess('train.csv')
+if __name__ == '__main__':
+    X, y = preprocess('train.csv')
