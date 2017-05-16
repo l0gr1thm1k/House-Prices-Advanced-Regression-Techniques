@@ -16,6 +16,7 @@ def preprocess(data):
     one_hot_encoding_columns = []
     dataset = pd.read_csv(data)
     y = dataset.iloc[:, -1].values.reshape(-1, 1)
+    del dataset['SalePrice']
     del dataset['Id']
     for index, col in enumerate(dataset.columns):
         if dataset[col].dtype == object:
@@ -64,5 +65,45 @@ def one_hot_encode(X, index):
     return results
 
 
+import math
+
+def RMSE(y, y_hat):
+    try:
+        return math.sqrt( (math.log(y) - math.log(y_hat))**2 )
+    except ValueError:
+        return 0
+    
+def get_error(prediction, ground_truth):
+    total_error = 0
+    for i, j in zip(prediction, ground_truth):
+        error = RMSE(i, j)
+        if error < 1.0:
+            total_error += error
+        else:
+            print(j, i, error)
+    return total_error / len(prediction)
+
+
 if __name__ == '__main__':
     X, y = preprocess('train.csv')
+    from sklearn.model_selection import train_test_split
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=.2,
+                                                        random_state=0)
+#    X_test, y_test = preprocess('test.csv')
+    from sklearn.linear_model import LinearRegression
+    regressor = LinearRegression()
+    regressor.fit(X_train, y_train)
+    
+    y_pred = regressor.predict(X_test)
+    
+    error = get_error(y_pred, y_test)
+    print(error)
+    
+    import matplotlib.pyplot as plt
+    plt.scatter(y_pred, y_test, color='red')
+    plt.plot(regressor.predict(X_train), y_train, color='blue')
+    plt.title("a regression")
+    plt.xlabel("prediction")
+    plt.ylabel("actual")
+    plt.show()
+    
