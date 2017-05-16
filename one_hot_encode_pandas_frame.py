@@ -43,7 +43,6 @@ def test():
     for i, j in enumerate(dataset.columns):
         if dataset[j].dtype == object:
             one_hot_encoding_columns.append(j)
-    print(one_hot_encoding_columns)
     new_result = one_hot_encode_pandas_frame(dataset, one_hot_encoding_columns, replace=True)[0]
     return new_result
 

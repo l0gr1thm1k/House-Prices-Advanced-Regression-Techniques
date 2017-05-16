@@ -17,6 +17,7 @@ def preprocess(data):
     dataset = pd.read_csv(data)
     for index, col in enumerate(dataset.columns):
         if dataset[col].dtype == object:
+            one_hot_encoding_columns.append(col)
         else:
             impute_column(dataset, col)
     dataset = ohepf(dataset, one_hot_encoding_columns, replace=True)[0]
@@ -36,9 +37,17 @@ def impute_column(dataset, col):
 
 
 def encode_category(dataset, col):
-    array = np.array(['Nan' if pd.isnull(x) else x for x in dataset[col]])
+    most_common = pd.get_dummies(dataset[col]).sum().sort_values(ascending=False).index[0] 
+
+    def replace_most_common(x):
+        if pd.isnull(x):
+            return most_common
+        else:
+            return x
+
+    new_col = dataset[col].map(replace_most_common)
     label_encoder = LabelEncoder()
-    dataset[col] = label_encoder.fit_transform(array)
+    dataset[col] = label_encoder.fit_transform(new_col)
 
 
 def one_hot_encode(X, index):
@@ -46,7 +55,6 @@ def one_hot_encode(X, index):
     results = one_hot_encoder.fit_transform(X).toarray()
     return results
 
-from sklearn.feature_extraction import DictVectorizer
 
 #if __name__ == '__main__':
 X, y = preprocess('train.csv')
@@ -57,16 +65,19 @@ def test():
     for i, j in enumerate(dataset.columns):
         if dataset[j].dtype == object:
             one_hot_encoding_columns.append(j)
-    print(one_hot_encoding_columns)
+        encode_category(dataset, j)
+        
     new_result = ohepf(dataset, one_hot_encoding_columns, replace=True)[0]
     return new_result
 
-new_result = test()
-
-
+'''new_result = test()
 dataset = pd.read_csv('train.csv')
+encode_category(dataset, 'MSZoning')
+data_encoded = ohepf(dataset, ['MSZoning'], replace=True)
+data = data_encoded[0]
 #result = ohepf(dataset, ['MSZoning', 'Street'], replace=True)[0]
 #dataset = pd.read_csv('train.csv')
 #encode_category(dataset, 'MSZoning')
 #test_encode = one_hot_encode(dataset, 2)
 #dataset['MSZoning'] = test_encode
+'''
