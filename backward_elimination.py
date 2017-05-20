@@ -24,20 +24,23 @@ def backward_elimination(dataset, significance_value=0.05):
     import statsmodels.formula.api as sm
     
     # fit model with all predictors
-    X, y = hp.preprocess(dataset)
-    X_opt = X[:, [i for i,x in enumerate(X[0])]]
+    X_train, X_test, y = hp.preprocess() #dataset)
+    X_opt = X_train[:, [i for i,x in enumerate(X_train[0])]]
+    X_opt_test = X_test[:, [i for i,x in enumerate(X_test[0])]]
        
     regressor_OLS = sm.OLS(endog=y, exog=X_opt).fit()
-    
+    # print(regressor_OLS.summary())
     # Look for predictor with highest P-value
     # remove this predictor and refit the model
     max_value, max_index = max_p_value(regressor_OLS)
     while max_value > significance_value:
         X_opt = X_opt[:, [i for i,x in enumerate(X_opt[0]) if i != max_index]]
+        X_opt_test = X_opt_test[:, [i for i,x in enumerate(X_opt_test[0]) if i != max_index]]
         regressor_OLS = sm.OLS(endog=y, exog=X_opt).fit()
         max_value, max_index = max_p_value(regressor_OLS)
+        print(max_value)
     # when no predictors exceed the significance value, the model is finished
-    return regressor_OLS
+    return regressor_OLS, X_opt_test
     
     
 def max_p_value(results):
@@ -61,5 +64,8 @@ def max_p_value(results):
     
 
 if __name__ == "__main__":
-    model = backward_elimination("train.csv")
+    model, test_data = backward_elimination("train.csv")
     print(model.summary())
+    #test_data = test_data.reshape(-1, 1)
+    y_pred = model.predict(test_data)
+    hp.make_submission(y_pred)
